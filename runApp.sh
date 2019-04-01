@@ -39,7 +39,7 @@ function restartNetwork() {
 	rm -rf ./fabric-client-kv-*
 
 	#Start the network
-	docker-compose -f ./artifacts/docker-compose.yaml up 
+	docker-compose -f ./artifacts/docker-compose.yaml up -d
 	echo
 }
 

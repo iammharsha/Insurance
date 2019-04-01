@@ -5,7 +5,14 @@ if [ $? -ne 0 ]; then
 	exit 1
 fi
 
-starttime=$(date +%s)
+export PATH=../bin:$PATH
+
+starttimeq=$(date +%s)
+
+function getTime(){
+  #TIME=$(($(date +%s%N)/1000000))
+  TIME=$(date +%s)
+}
 
 # Print the usage message
 # Language defaults to "golang"
@@ -16,6 +23,9 @@ function setChaincodePath(){
 	LANGUAGE="golang"
 	CC_SRC_PATH="github.com/example_cc/go"
 }
+
+tt=0
+rt=0
 
 setChaincodePath
 
@@ -55,6 +65,8 @@ echo
 echo
 echo "POST request Create channel  ..."
 echo
+getTime
+starttime=$TIME
 curl -s -X POST \
   http://localhost:4000/channels \
   -H "authorization: Bearer $ORG1_TOKEN" \
@@ -63,11 +75,17 @@ curl -s -X POST \
 	"channelName":"mychannel",
 	"channelConfigPath":"../artifacts/channel/mychannel.tx"
 }'
+tt=$((tt+1))
+getTime
+endtime=$TIME
+TRANSACTION=$(( TRANSACTION + $(( endtime - starttime )) ))
 echo
 echo
 sleep 5
 echo "POST request Join channel on Insurance"
 echo
+getTime
+starttime=$TIME
 curl -s -X POST \
   http://localhost:4000/channels/mychannel/peers \
   -H "authorization: Bearer $ORG1_TOKEN" \
@@ -75,11 +93,19 @@ curl -s -X POST \
   -d '{
 	"peers": ["peer0.insurance.example.com","peer1.insurance.example.com"]
 }'
+tt=$((tt+1))
+getTime
+endtime=$TIME
+TRANSACTION=$(( TRANSACTION + $(( endtime - starttime )) ))
+execTime=$(( endtime - starttime ))
+echo "Execution Time = $execTime s"
 echo
 echo
 
 echo "POST request Join channel on Hospital"
 echo
+getTime
+starttime=$TIME
 curl -s -X POST \
   http://localhost:4000/channels/mychannel/peers \
   -H "authorization: Bearer $ORG2_TOKEN" \
@@ -87,11 +113,19 @@ curl -s -X POST \
   -d '{
 	"peers": ["peer0.hospital.example.com","peer1.hospital.example.com"]
 }'
+tt=$((tt+1))
+getTime
+endtime=$TIME
+TRANSACTION=$(( TRANSACTION + $(( endtime - starttime )) ))
+execTime=$(( endtime - starttime ))
+echo "Execution Time = $execTime s"
 echo
 echo
 
 echo "POST request Join channel on Patient"
 echo
+getTime
+starttime=$TIME
 curl -s -X POST \
   http://localhost:4000/channels/mychannel/peers \
   -H "authorization: Bearer $ORG3_TOKEN" \
@@ -99,6 +133,12 @@ curl -s -X POST \
   -d '{
 	"peers": ["peer0.patient.example.com","peer1.patient.example.com"]
 }'
+tt=$((tt+1))
+getTime
+endtime=$TIME
+TRANSACTION=$(( TRANSACTION + $(( endtime - starttime )) ))
+execTime=$(( endtime - starttime ))
+echo "Execution Time = $execTime s"
 echo
 echo
 
@@ -111,11 +151,19 @@ curl -s -X POST \
   -d '{
 	"configUpdatePath":"../artifacts/channel/InsuranceMSPanchors.tx"
 }'
+tt=$((tt+1))
+getTime
+endtime=$TIME
+TRANSACTION=$(( TRANSACTION + $(( endtime - starttime )) ))
+execTime=$(( endtime - starttime ))
+echo "Execution Time = $execTime s"
 echo
 echo
 
 echo "POST request Update anchor peers on Hospital"
 echo
+getTime
+starttime=$TIME
 curl -s -X POST \
   http://localhost:4000/channels/mychannel/anchorpeers \
   -H "authorization: Bearer $ORG2_TOKEN" \
@@ -123,11 +171,19 @@ curl -s -X POST \
   -d '{
 	"configUpdatePath":"../artifacts/channel/HospitalMSPanchors.tx"
 }'
+tt=$((tt+1))
+getTime
+endtime=$TIME
+TRANSACTION=$(( TRANSACTION + $(( endtime - starttime )) ))
+execTime=$(( endtime - starttime ))
+echo "Execution Time = $execTime s"
 echo
 echo
 
 echo "POST request Update anchor peers on Patient"
 echo
+getTime
+starttime=$TIME
 curl -s -X POST \
   http://localhost:4000/channels/mychannel/anchorpeers \
   -H "authorization: Bearer $ORG3_TOKEN" \
@@ -135,12 +191,20 @@ curl -s -X POST \
   -d '{
 	"configUpdatePath":"../artifacts/channel/PatientMSPanchors.tx"
 }'
+tt=$((tt+1))
+getTime
+endtime=$TIME
+TRANSACTION=$(( TRANSACTION + $(( endtime - starttime )) ))
+execTime=$(( endtime - starttime ))
+echo "Execution Time = $execTime s"
 echo
 echo
 
 
 echo "POST Install chaincode on Insurance"
 echo
+getTime
+starttime=$TIME
 curl -s -X POST \
   http://localhost:4000/chaincodes \
   -H "authorization: Bearer $ORG1_TOKEN" \
@@ -152,11 +216,19 @@ curl -s -X POST \
 	\"chaincodeType\": \"$LANGUAGE\",
 	\"chaincodeVersion\":\"v0\"
 }"
+tt=$((tt+1))
+getTime
+endtime=$TIME
+TRANSACTION=$(( TRANSACTION + $(( endtime - starttime )) ))
+execTime=$(( endtime - starttime ))
+echo "Execution Time = $execTime s"
 echo
 echo
 
 echo "POST Install chaincode on Hospital"
 echo
+getTime
+starttime=$TIME
 curl -s -X POST \
   http://localhost:4000/chaincodes \
   -H "authorization: Bearer $ORG2_TOKEN" \
@@ -168,11 +240,19 @@ curl -s -X POST \
 	\"chaincodeType\": \"$LANGUAGE\",
 	\"chaincodeVersion\":\"v0\"
 }"
+tt=$((tt+1))
+getTime
+endtime=$TIME
+TRANSACTION=$(( TRANSACTION + $(( endtime - starttime )) ))
+execTime=$(( endtime - starttime ))
+echo "Execution Time = $execTime s"
 echo
 echo
 
 echo "POST Install chaincode on Patient"
 echo
+getTime
+starttime=$TIME
 curl -s -X POST \
   http://localhost:4000/chaincodes \
   -H "authorization: Bearer $ORG3_TOKEN" \
@@ -184,11 +264,18 @@ curl -s -X POST \
 	\"chaincodeType\": \"$LANGUAGE\",
 	\"chaincodeVersion\":\"v0\"
 }"
+tt=$((tt+1))
+getTime
+endtime=$TIME
+TRANSACTION=$(( TRANSACTION + $(( endtime - starttime )) ))
+execTime=$(( endtime - starttime ))
+echo "Execution Time = $execTime s"
 echo
 echo
-
 echo "POST instantiate chaincode on Insurance"
 echo
+getTime
+starttime=$TIME
 curl -s -X POST \
   http://localhost:4000/channels/mychannel/chaincodes \
   -H "authorization: Bearer $ORG1_TOKEN" \
@@ -199,21 +286,58 @@ curl -s -X POST \
 	\"chaincodeType\": \"$LANGUAGE\",
 	\"args\":[\"Lucy\",\"A123\",\"9876598765\",\"50000\"]
 }"
+tt=$((tt+1))
+getTime
+endtime=$TIME
+TRANSACTION=$(( TRANSACTION + $(( endtime - starttime )) ))
+execTime=$(( endtime - starttime ))
+echo "Execution Time = $execTime s"
 echo
 echo
+echo "GET query chaincode on peer1 of Org1"
+echo
+getTime
+starttime=$TIME
+curl -s -X GET \
+  "http://localhost:4000/channels/mychannel/chaincodes/mycc15?peer=peer0.insurance.example.com&fcn=query&args=%5B%22A123%22%5D" \
+  -H "authorization: Bearer $ORG1_TOKEN" \
+  -H "content-type: application/json"
+rt=$((rt+1))
+getTime
+endtime=$TIME
+READ=$(( READ + $(( endtime - starttime )) ))
+execTime=$(( endtime - starttime ))
+echo "Execution Time = $execTime s"
+echo
+echo
+echo "Invoke Chaincode - Claim Insurance"
+echo
+getTime
+starttime=$TIME
 curl -s -X POST   http://localhost:4000/channels/mychannel/chaincodes/mycc15   -H "authorization: Bearer $ORG3_TOKEN"   -H "content-type: application/json"   -d "{
 \"fcn\":\"move\",
 \"args\":[\"A123\",\"H1\",\"100\"]
 }"
+tt=$((tt+1))
+getTime
+endtime=$TIME
+TRANSACTION=$(( TRANSACTION + $(( endtime - starttime )) ))
+execTime=$(( endtime - starttime ))
+echo "Execution Time = $execTime s"
 echo
 echo
-
 echo "GET query chaincode on peer1 of Org1"
 echo
 curl -s -X GET \
   "http://localhost:4000/channels/mychannel/chaincodes/mycc15?peer=peer0.insurance.example.com&fcn=query&args=%5B%22A123%22%5D" \
   -H "authorization: Bearer $ORG1_TOKEN" \
   -H "content-type: application/json"
+rt=$((rt+1))
+getTime
+endtime=$TIME
+READ=$(( READ + $(( endtime - starttime )) ))
+execTime=$(( endtime - starttime ))
+echo "Execution Time = $execTime s"
 echo
 echo
 
@@ -229,4 +353,12 @@ echo
 #HASH=$(echo $BLOCK_INFO | jq -r ".header.previous_hash")
 #echo $HASH
 
-echo "Total execution time : $(($(date +%s)-starttime)) secs ..."
+total=$(($(date +%s)-starttimeq))
+tthroughput=$(( ( tt * 100 ) / TRANSACTION ))
+rthroughput=$(( ( rt * 100 ) / READ ))
+echo "Total execution time : $total secs ..."
+echo
+echo "Transaction Throughput= $tthroughput"
+echo
+echo "Read Throughput = $rthroughput"
+echo

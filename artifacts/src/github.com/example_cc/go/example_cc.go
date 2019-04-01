@@ -22,7 +22,7 @@ import (
 	"strconv"
 
 	"github.com/hyperledger/fabric/core/chaincode/shim"
-	"github.com/hyperledger/fabric/protos/peer"
+	pb "github.com/hyperledger/fabric/protos/peer"
 )
 
 type Policy struct {
@@ -55,11 +55,11 @@ func (t *SimpleChaincode) Init(stub shim.ChaincodeStubInterface) pb.Response {
 		return shim.Error("Expecting integer value for asset holding")
 	}
 	// Initialize the chaincode
-	var policy := Policy{PatientName: args[0], PolicyID: args[1], Phno: num, Total: tot, HospitalID: "", Amount: 0}
+	var policy = Policy{PatientName: args[0], PolicyID: args[1], Phno: num, Total: tot, HospitalID: "", Amount: 0}
 	policyAsBytes, _ := json.Marshal(policy)
 
 	// Write the state to the ledger
-	err = stub.PutState(PolicyID, policyAsBytes)
+	err = stub.PutState(policy.PolicyID, policyAsBytes)
 	if err != nil {
 		return shim.Error(err.Error())
 	}
@@ -73,11 +73,6 @@ func (t *SimpleChaincode) Invoke(stub shim.ChaincodeStubInterface) pb.Response {
 	logger.Info("########### insurance Invoke ###########")
 
 	function, args := stub.GetFunctionAndParameters()
-
-	if function == "delete" {
-		// Deletes an entity from its state
-		return t.delete(stub, args)
-	}
 
 	if function == "query" {
 		// queries an entity state
@@ -104,6 +99,10 @@ func (t *SimpleChaincode) move(stub shim.ChaincodeStubInterface, args []string) 
 
 	// Get the state from the ledger
 	// TODO: will be nice to have a GetAllState call to ledger
+	policy := Policy{}
+	PolicyID = args[0]
+	hospiID = args[1]
+	Amt, err = strconv.Atoi(args[2])
 	PolicyIDbytes, err := stub.GetState(PolicyID)
 	if err != nil {
 		return shim.Error("Failed to get state")
@@ -111,12 +110,8 @@ func (t *SimpleChaincode) move(stub shim.ChaincodeStubInterface, args []string) 
 	if PolicyIDbytes == nil {
 		return shim.Error("Entity not found")
 	}
-	var policy := Policy{}
-	PolicyID = args[0]
-	hospiID = args[1]
-	Amt, err = strconv.Atoi(args[2])
 
-	json.Unmarshal(policyIDBytes, &policy)
+	json.Unmarshal(PolicyIDbytes, &policy)
 
 	// Perform the execution
 
@@ -126,30 +121,13 @@ func (t *SimpleChaincode) move(stub shim.ChaincodeStubInterface, args []string) 
 	policy.Total = policy.Total - Amt
 	policy.HospitalID = hospiID
 	policy.Amount = Amt
-	policyAsBytes, _ = json.Marshal(car)
-	APIstub.PutState(PolicyID, policyAsBytes)
+	policyAsBytes, _ := json.Marshal(policy)
+	stub.PutState(PolicyID, policyAsBytes)
 	if err != nil {
 		return shim.Error(err.Error())
 	}
 
 	logger.Infof("Avail Balance= Total\n", policy.Total)
-
-	return shim.Success(nil)
-}
-
-// Deletes an entity from state
-func (t *SimpleChaincode) delete(stub shim.ChaincodeStubInterface, args []string) pb.Response {
-	if len(args) != 1 {
-		return shim.Error("Incorrect number of arguments. Expecting 1")
-	}
-
-	A := args[0]
-
-	// Delete the key from the state in ledger
-	err := stub.DelState(A)
-	if err != nil {
-		return shim.Error("Failed to delete state")
-	}
 
 	return shim.Success(nil)
 }
@@ -167,9 +145,9 @@ func (t *SimpleChaincode) query(stub shim.ChaincodeStubInterface, args []string)
 	PolicyID = args[0]
 
 	// Get the state from the ledger
-	PolicyAsbytes, err := stub.GetState(A)
+	PolicyAsbytes, err := stub.GetState(PolicyID)
 	if err != nil {
-		jsonResp := "{\"Error\":\"Failed to get state for " + A + "\"}"
+		jsonResp := "{\"Error\":\"Failed to get state for " + PolicyID + "\"}"
 		return shim.Error(jsonResp)
 	}
 
@@ -178,11 +156,11 @@ func (t *SimpleChaincode) query(stub shim.ChaincodeStubInterface, args []string)
 		return shim.Error(jsonResp)
 	}
 	policy := Policy{}
-	json.Unmarshal(policyIDBytes, &policy)
+	json.Unmarshal(PolicyAsbytes, &policy)
 
-	jsonResp := "{\"PatientID\":\"" + policy.PolicyID + "\",\"HospitalID\":\"" + policy.HospitalID + "\",\"PatientName\":\"" + policy.PatientName + "\",\"Phone Number\":\"" + policy.Phno + "\",\"Balance\":\"" + policy.Total + "\"\"Last Bill Amount\":\"" + policy.Amount + "\"}"
+	jsonResp := "{\"PatientID\":\"" + policy.PolicyID + "\",\"HospitalID\":\"" + policy.HospitalID + "\",\"PatientName\":\"" + policy.PatientName + "\",\"Phone Number\":\"" + strconv.Itoa(policy.Phno) + "\",\"Balance\":\"" + strconv.Itoa(policy.Total) + "\"\"Last Bill Amount\":\"" + strconv.Itoa(policy.Amount) + "\"}"
 	logger.Infof("Query Response:%s\n", jsonResp)
-	return shim.Success(Avalbytes)
+	return shim.Success(PolicyAsbytes)
 }
 
 func main() {

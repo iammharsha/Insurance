@@ -26,6 +26,13 @@ description: "Insurance Network"
 #
 version: "1.0"
 
+caliper:
+  blockchain: fabric-ccp
+  command:
+    start: docker-compose -f artifacts/docker-compose.yaml up -d;sleep 3s
+    end: docker-compose -f artifacts/docker-compose.yaml down;docker rm $(docker ps -aq);docker rmi $(docker images dev* -q)
+
+
 #
 # The client section will be added on a per org basis see org1.yaml and org2.yaml
 #
@@ -69,10 +76,10 @@ channels:
         eventSource: true
 
       peer1.insurance.example.com:
-        endorsingPeer: false
+        endorsingPeer: true
         chaincodeQuery: true
         ledgerQuery: true
-        eventSource: false
+        eventSource: true
 
       peer0.hospital.example.com:
         endorsingPeer: true
@@ -81,10 +88,10 @@ channels:
         eventSource: true
 
       peer1.hospital.example.com:
-        endorsingPeer: false
+        endorsingPeer: true
         chaincodeQuery: true
         ledgerQuery: true
-        eventSource: false
+        eventSource: true
 
       peer0.patient.example.com:
         endorsingPeer: true
@@ -93,18 +100,19 @@ channels:
         eventSource: true
 
       peer1.patient.example.com:
-        endorsingPeer: false
+        endorsingPeer: true
         chaincodeQuery: true
         ledgerQuery: true
-        eventSource: false
+        eventSource: true
 
     # [Optional]. what chaincodes are expected to exist on this channel? The application can use
     # this information to validate that the target peers are in the expected state by comparing
     # this list with the query results of getInstalledChaincodes() and getInstantiatedChaincodes()
     chaincodes:
       # the format follows the "cannonical name" of chaincodes by fabric code
-      - mycc:v0
-
+      - id: mycc
+        version: v0
+      
 #
 # list of participating organizations in this network
 #

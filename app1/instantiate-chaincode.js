@@ -54,12 +54,11 @@ const instantiateChaincode = async function(peers, channelName, chaincodeName, c
 			// The policy can be fulfilled when members from both orgs signed.
 			'endorsement-policy': {
 			        identities: [
-					{ role: { name: 'member', mspId: 'InsuranceMSP' }},
-					{ role: { name: 'member', mspId: 'HospitalMSP' }},
-					{ role: { name: 'member', mspId: 'PatientMSP' }}
+					{ role: { name: 'peer', mspId: 'InsuranceMSP' }},
+					{ role: { name: 'peer', mspId: 'HospitalMSP' }}
 			        ],
 			        policy: {
-					'2-of':[{ 'signed-by': 0 }, { 'signed-by': 1 },{ 'signed-by': 2 }]
+					'2-of':[{ 'signed-by': 1 }, { 'signed-by': 1 }]
 			        }
 		        }
 		};
@@ -67,7 +66,7 @@ const instantiateChaincode = async function(peers, channelName, chaincodeName, c
 		if (functionName)
 			request.fcn = functionName;
 
-		let results = await channel.sendInstantiateProposal(request, 600000); //instantiate takes much longer
+		let results = await channel.sendInstantiateProposal(request, 100000); //instantiate takes much longer
 
 		// the returned object has both the endorsement results
 		// and the actual proposal, the proposal will be needed
@@ -110,7 +109,7 @@ const instantiateChaincode = async function(peers, channelName, chaincodeName, c
 						let message = 'REQUEST_TIMEOUT:' + eh.getPeerAddr();
 						logger.error(message);
 						eh.disconnect();
-					}, 600000);
+					}, 100000);
 					eh.registerTxEvent(deployId, (tx, code, block_num) => {
 						logger.info('The chaincode instantiate transaction has been committed on peer %s',eh.getPeerAddr());
 						logger.info('Transaction %s has status of %s in blocl %s', tx, code, block_num);
